@@ -20,6 +20,7 @@ struct MainWindowView: View {
                 .padding(.vertical, 6)
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
+            .groupBoxStyle(StandardGroupBoxStyle())
             .padding(.top, 8)
 
             GroupBox("Quality") {
@@ -27,6 +28,7 @@ struct MainWindowView: View {
                     .padding(.vertical, 6)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
+            .groupBoxStyle(StandardGroupBoxStyle())
 
             HStack {
                 Spacer()
@@ -53,6 +55,25 @@ struct MainWindowView: View {
     }
 }
 
+/// The system's default GroupBox look uses a fairly large corner radius; this swaps in the
+/// standard, smaller radius macOS uses for controls/panels (6pt) while keeping the same label +
+/// subtle-fill layout.
+private struct StandardGroupBoxStyle: GroupBoxStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            configuration.label
+                .font(.headline)
+            configuration.content
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 6)
+                .fill(Color.secondary.opacity(0.1))
+        )
+    }
+}
+
 /// A toggle row with the switch on the left and its caption reading to the right of it.
 private struct RecordingOptionRow: View {
     let title: String
@@ -68,19 +89,47 @@ private struct RecordingOptionRow: View {
     }
 }
 
-/// A native macOS radio-button group — the same native control family as the toggle switches
-/// above, rather than a custom-drawn card or row. Deliberately not a segmented `Picker` either
-/// (that style is reserved for the video-source chooser in SourceSelectionView).
+/// Deliberately not a segmented `Picker` (that style is reserved for the video-source chooser in
+/// SourceSelectionView) — two plain, directly clickable cards so the two controls read as
+/// different kinds of choice at a glance, while the surrounding GroupBox keeps this section
+/// aligned with "Choose what to record" above it.
 private struct QualityPicker: View {
     @Binding var selection: RecordingQuality
 
     var body: some View {
-        Picker("", selection: $selection) {
+        HStack(spacing: 10) {
             ForEach(RecordingQuality.allCases) { quality in
-                Text(quality.title).tag(quality)
+                QualityCard(quality: quality, isSelected: selection == quality) {
+                    selection = quality
+                }
             }
         }
-        .pickerStyle(.radioGroup)
-        .labelsHidden()
+    }
+}
+
+private struct QualityCard: View {
+    let quality: RecordingQuality
+    let isSelected: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(quality.title)
+                    .font(.callout.weight(.semibold))
+                Text(quality.subtitle)
+                    .font(.caption2)
+                    .foregroundStyle(isSelected ? Color.white.opacity(0.85) : .secondary)
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 10)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(
+                RoundedRectangle(cornerRadius: 10)
+                    .fill(isSelected ? DinoPalette.mid : Color.secondary.opacity(0.1))
+            )
+            .foregroundStyle(isSelected ? Color.white : Color.primary)
+        }
+        .buttonStyle(.plain)
     }
 }

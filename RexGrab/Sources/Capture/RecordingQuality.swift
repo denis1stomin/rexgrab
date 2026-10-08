@@ -26,6 +26,13 @@ enum RecordingQuality: String, CaseIterable, Identifiable, Equatable {
         }
     }
 
+    var subtitle: String {
+        switch self {
+        case .high: return "Native resolution — large files"
+        case .optimal: return "Smaller files, built for meetings"
+        }
+    }
+
     /// Caps the *longer* edge of the captured video to this many pixels; nil records at the
     /// source's native resolution. Note this is the longer edge, not height specifically — 1080
     /// here would NOT mean "1080p": for a 16:9 screen it would land at roughly 1080x608
