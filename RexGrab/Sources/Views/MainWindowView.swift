@@ -22,6 +22,12 @@ struct MainWindowView: View {
             }
             .padding(.top, 8)
 
+            GroupBox("Quality") {
+                QualityPicker(selection: $appState.recordingQuality)
+                    .padding(.vertical, 6)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+
             HStack {
                 Spacer()
                 Button {
@@ -59,5 +65,22 @@ private struct RecordingOptionRow: View {
                 .labelsHidden()
             Text(title)
         }
+    }
+}
+
+/// A native macOS radio-button group — the same native control family as the toggle switches
+/// above, rather than a custom-drawn card or row. Deliberately not a segmented `Picker` either
+/// (that style is reserved for the video-source chooser in SourceSelectionView).
+private struct QualityPicker: View {
+    @Binding var selection: RecordingQuality
+
+    var body: some View {
+        Picker("", selection: $selection) {
+            ForEach(RecordingQuality.allCases) { quality in
+                Text(quality.title).tag(quality)
+            }
+        }
+        .pickerStyle(.radioGroup)
+        .labelsHidden()
     }
 }
