@@ -1,3 +1,4 @@
+import AVFoundation
 import XCTest
 @testable import RexGrab
 
@@ -21,5 +22,10 @@ final class RecordingQualityTests: XCTestCase {
         XCTAssertEqual(RecordingQuality.high.audioChannelCount, 2)
         XCTAssertEqual(RecordingQuality.optimal.audioChannelCount, 1)
         XCTAssertGreaterThan(RecordingQuality.high.audioBitRate, RecordingQuality.optimal.audioBitRate)
+    }
+
+    func testOnlyOptimalQualitySpecifiesAVideoProfileLevel() {
+        XCTAssertNil(RecordingQuality.high.videoProfileLevel)
+        XCTAssertEqual(RecordingQuality.optimal.videoProfileLevel, AVVideoProfileLevelH264HighAutoLevel)
     }
 }

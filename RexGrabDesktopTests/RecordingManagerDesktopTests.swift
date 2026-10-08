@@ -117,7 +117,27 @@ final class RecordingManagerDesktopTests: XCTestCase {
             settings: RecordingSettings(videoSource: nil, captureSystemAudio: true, captureMicrophone: false),
             expectedVideoTracks: 0,
             expectedAudioTracks: 1,
-            minimumFileSize: 1_000
+            minimumFileSize: 1_000,
+            // Default quality is .optimal — mono, per RecordingQuality.audioChannelCount.
+            expectedAudioChannelCount: 1
+        )
+    }
+
+    /// Exercises the .high RecordingQuality preset end-to-end (the other tests above all use the
+    /// default .optimal), since that's where RecordingManager actually applies
+    /// RecordingQuality.audioChannelCount/audioBitRate/videoProfileLevel/caps — none of which are
+    /// reachable from a pure unit test (see RecordingQualityTests, which only covers the enum's
+    /// own data table).
+    func testSystemAudioHighQualityUsesStereo() async throws {
+        try await recordAndAssert(
+            settings: RecordingSettings(
+                videoSource: nil, captureSystemAudio: true, captureMicrophone: false,
+                recordingQuality: .high
+            ),
+            expectedVideoTracks: 0,
+            expectedAudioTracks: 1,
+            minimumFileSize: 1_000,
+            expectedAudioChannelCount: 2
         )
     }
 
@@ -177,6 +197,7 @@ final class RecordingManagerDesktopTests: XCTestCase {
         expectedVideoTracks: Int,
         expectedAudioTracks: Int,
         minimumFileSize: Int = 10_000,
+        expectedAudioChannelCount: Int? = nil,
         file: StaticString = #filePath,
         line: UInt = #line
     ) async throws {
@@ -211,17 +232,35 @@ final class RecordingManagerDesktopTests: XCTestCase {
 
             let tracks = try await asset.load(.tracks)
             let videoTracks = tracks.filter { $0.mediaType == .video }
-            let audioTrackCount = tracks.filter { $0.mediaType == .audio }.count
+            let audioTracks = tracks.filter { $0.mediaType == .audio }
             XCTAssertEqual(
                 videoTracks.count, expectedVideoTracks,
                 "Unexpected video track count in \(url.lastPathComponent)",
                 file: file, line: line
             )
             XCTAssertEqual(
-                audioTrackCount, expectedAudioTracks,
+                audioTracks.count, expectedAudioTracks,
                 "Unexpected audio track count in \(url.lastPathComponent)",
                 file: file, line: line
             )
+
+            // Verifies the selected RecordingQuality's audioChannelCount actually reached the
+            // encoded output, not just the AVAssetWriterInput's outputSettings dictionary.
+            if let expectedAudioChannelCount {
+                for audioTrack in audioTracks {
+                    let formatDescriptions = try await audioTrack.load(.formatDescriptions)
+                    guard let formatDescription = formatDescriptions.first,
+                        let streamBasicDescription = CMAudioFormatDescriptionGetStreamBasicDescription(formatDescription) else {
+                        XCTFail("Couldn't read audio format description for \(url.lastPathComponent)", file: file, line: line)
+                        continue
+                    }
+                    XCTAssertEqual(
+                        Int(streamBasicDescription.pointee.mChannelsPerFrame), expectedAudioChannelCount,
+                        "\(url.lastPathComponent) audio channel count doesn't match the selected RecordingQuality",
+                        file: file, line: line
+                    )
+                }
+            }
 
             // The encoded frame must exactly match the real captured content's pixel size — a
             // mismatch here (e.g. from guessing a fixed Retina scale instead of asking
