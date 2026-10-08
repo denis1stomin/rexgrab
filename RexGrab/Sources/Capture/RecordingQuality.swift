@@ -21,14 +21,14 @@ enum RecordingQuality: String, CaseIterable, Identifiable, Equatable {
 
     var title: String {
         switch self {
-        case .high: return "High Quality"
+        case .high: return "Native"
         case .optimal: return "Optimal"
         }
     }
 
     var subtitle: String {
         switch self {
-        case .high: return "Native resolution — large files"
+        case .high: return "Full resolution — large files"
         case .optimal: return "Smaller files, built for meetings"
         }
     }
