@@ -26,6 +26,7 @@ Most screen recorders either bury the feature inside a bloated all-in-one app, r
 - 🎥 **Record video** — whole screen or a specific app window, with a live thumbnail picker for each.
 - 🔊 **Record system audio** — scoped to a single app when recording its window, or all system sound when recording the whole screen. Always excludes RexGrab's own audio.
 - 🎙️ **Record microphone** — mixed in as a separate track, on its own or alongside system audio.
+- 🎚️ **Quality picker** — **Optimal** (default, smaller files: 1080p/30fps, mono audio) or **Native** (full resolution/frame rate, stereo audio) — pick it right on the first window.
 - ⏸️ **Pause / resume** — cleanly stops both video and audio (no dead air, no frozen frame) and resumes on demand.
 - 🛡️ **Crash-resilient** — long recordings automatically roll over into new 1.5-hour segments, so a crash or power loss doesn't corrupt hours of footage.
 - 🪟 **Auto-stop on window close** — if you're recording a specific app window and it closes or crashes, RexGrab saves what it captured and resets, just like hitting Stop.
@@ -35,7 +36,7 @@ Most screen recorders either bury the feature inside a bloated all-in-one app, r
 
 ## How it works
 
-1. **Choose what to record** — toggle video, system audio, and/or microphone.
+1. **Choose what to record** — toggle video, system audio, and/or microphone, and pick a quality (Optimal or Native).
 2. **Pick a source** (if recording video) — whole screen or a specific app window, each with live previews.
 3. **Hit record** — the app window hides; macOS's own recording indicator confirms capture is live.
 4. **Click the Dock icon anytime** to bring up the live timer with Pause/Stop controls.
@@ -77,8 +78,12 @@ make clean   # remove build artifacts
 ## Output format
 
 - **Container:** MP4
-- **Video:** H.264, hardware-encoded, capped at 1920px on the longer edge (real 1080p for a standard 16:9 screen) and 30fps, bitrate left to VideoToolbox's own content-adaptive default
-- **Audio:** system audio and microphone as separate mono AAC tracks (when both are enabled), 64 kbps each — plenty for speech
+- **Video:** H.264, hardware-encoded via VideoToolbox, bitrate left to its own content-adaptive default in both presets
+  - **Optimal** (default): capped at 1920px on the longer edge (real 1080p for a standard 16:9 screen) and 30fps
+  - **Native:** native resolution and frame rate, uncapped
+- **Audio:** system audio and microphone as separate AAC tracks (when both are enabled)
+  - **Optimal** (default): mono, 64 kbps each — plenty for speech
+  - **Native:** stereo, 128 kbps each
 - **Filename:** `Recording YYYY-MM-DDTHH-MM-SS.mp4`, saved to `~/Downloads`
 
 ## Project status
