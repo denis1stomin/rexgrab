@@ -93,7 +93,8 @@ final class RecordingManager: NSObject, @unchecked Sendable {
             let scale = CGFloat(filter.pointPixelScale)
             videoPixelSize = Self.downscaledIfNeeded(
                 width: Self.evenPixelDimension(filter.contentRect.width * scale),
-                height: Self.evenPixelDimension(filter.contentRect.height * scale)
+                height: Self.evenPixelDimension(filter.contentRect.height * scale),
+                maxDimension: settings.recordingQuality.maxVideoDimension
             )
         }
         // The writer/encoder is set up only now, after videoPixelSize reflects the filter's real
@@ -110,10 +111,13 @@ final class RecordingManager: NSObject, @unchecked Sendable {
             config.width = videoPixelSize.width
             config.height = videoPixelSize.height
             // ScreenCaptureKit otherwise delivers frames at the display's own refresh rate (up to
-            // 120Hz on ProMotion) regardless of on-screen motion — capping it is one of the two
-            // main levers (with the explicit video bitrate below) for keeping long meeting
-            // recordings from ballooning in size; a talking-head screen share doesn't need more.
-            config.minimumFrameInterval = CMTime(value: 1, timescale: Int32(Self.videoFrameRate))
+            // 120Hz on ProMotion) regardless of on-screen motion — capping it (see
+            // RecordingQuality.videoFrameRate; nil for .high leaves it uncapped) is one of this
+            // quality preset's two main levers, with the resolution cap above, for keeping long
+            // meeting recordings from ballooning in size.
+            if let frameRate = settings.recordingQuality.videoFrameRate {
+                config.minimumFrameInterval = CMTime(value: 1, timescale: Int32(frameRate))
+            }
         }
         streamConfiguration = config
 
@@ -169,18 +173,6 @@ final class RecordingManager: NSObject, @unchecked Sendable {
         return rounded.isMultiple(of: 2) ? rounded : rounded + 1
     }
 
-    private static let videoFrameRate: Double = 30
-
-    /// A meeting recording doesn't need native 5K/6K pixels — cap the longer edge and scale the
-    /// other proportionally so aspect ratio (and therefore no letterboxing) is preserved.
-    ///
-    /// This caps the *longer* edge (width, for typical landscape recordings) — 1080 here does NOT
-    /// mean "1080p": for a 16:9 screen it lands at roughly 1080x608 (~600p-equivalent, a third of
-    /// 1080p's real pixel count), which is what actually caused the persistent blurry-video reports
-    /// this session — no bitrate tweak could fix a genuinely too-small frame. 1920 here gives real
-    /// 1920x1080 for a standard 16:9 screen, which is what "1080p" actually refers to.
-    private static let maxVideoDimension = 1920
-
     /// A hard floor below which a pollForWindowResize reading is rejected outright as garbage
     /// rather than ever treated as a real resize — no legitimate captured window content should be
     /// this small, and unconditionally acting on a bad reading has previously crashed AVAssetWriter
@@ -194,26 +186,25 @@ final class RecordingManager: NSObject, @unchecked Sendable {
     /// commits to it — filters out a one-off bad reading (e.g. mid-drag, not yet settled).
     private static let resizePollConfirmations = 2
 
-    private static func downscaledIfNeeded(width: Int, height: Int) -> (width: Int, height: Int) {
+    private static func downscaledIfNeeded(width: Int, height: Int, maxDimension: Int?) -> (width: Int, height: Int) {
+        guard let maxDimension else { return (width, height) }
         let longestEdge = max(width, height)
-        guard longestEdge > maxVideoDimension else { return (width, height) }
-        let scale = CGFloat(maxVideoDimension) / CGFloat(longestEdge)
+        guard longestEdge > maxDimension else { return (width, height) }
+        let scale = CGFloat(maxDimension) / CGFloat(longestEdge)
         return (
             evenPixelDimension(CGFloat(width) * scale),
             evenPixelDimension(CGFloat(height) * scale)
         )
     }
 
-    /// Mono at 64 kbps AAC is plenty for a meeting's speech content — halves the audio bitrate
-    /// from the original 128 kbps/stereo, and putting all those bits into one channel instead of
-    /// splitting them across two keeps quality closer to transparent than stereo at the same
-    /// total bitrate would.
-    private nonisolated(unsafe) static let audioSettings: [String: Any] = [
-        AVFormatIDKey: kAudioFormatMPEG4AAC,
-        AVNumberOfChannelsKey: 1,
-        AVSampleRateKey: 44_100,
-        AVEncoderBitRateKey: 64_000,
-    ]
+    private static func audioSettings(for quality: RecordingQuality) -> [String: Any] {
+        [
+            AVFormatIDKey: kAudioFormatMPEG4AAC,
+            AVNumberOfChannelsKey: quality.audioChannelCount,
+            AVSampleRateKey: 44_100,
+            AVEncoderBitRateKey: quality.audioBitRate,
+        ]
+    }
 
     /// Must be called on `queue`.
     private func beginSegmentWriter() throws {
@@ -235,27 +226,33 @@ final class RecordingManager: NSObject, @unchecked Sendable {
 
         if settings.capturesVideo {
             let (width, height) = videoPixelSize
-            let videoSettings: [String: Any] = [
+            let quality = settings.recordingQuality
+            // No explicit AVVideoAverageBitRateKey: it's a soft target VideoToolbox's rate
+            // control can undershoot considerably on mostly-static screen content (measured
+            // ~518 kbps actual against a 1.5 Mbps target, then ~561 kbps against 3 Mbps —
+            // raising the number barely moved the real result), which is what made two earlier
+            // attempts at an explicit bitrate look visibly blurry. Left unset, VideoToolbox
+            // falls back to its own complexity-adaptive default — the same behavior that, before
+            // any of these encoding changes, was explicitly praised as good quality (just too
+            // large a file at uncapped native resolution/frame rate, i.e. .high below). Both
+            // quality presets rely on this adaptive default; only the pixels/frames/profile fed
+            // into it differ (see RecordingQuality) — a guaranteed size reduction for .optimal,
+            // unlike fighting the rate controller's soft bitrate target.
+            var compressionProperties: [String: Any] = [:]
+            if let frameRate = quality.videoFrameRate {
+                compressionProperties[AVVideoExpectedSourceFrameRateKey as String] = Int(frameRate)
+            }
+            if let profileLevel = quality.videoProfileLevel {
+                compressionProperties[AVVideoProfileLevelKey as String] = profileLevel
+            }
+            var videoSettings: [String: Any] = [
                 AVVideoCodecKey: AVVideoCodecType.h264,
                 AVVideoWidthKey: width,
                 AVVideoHeightKey: height,
-                // No explicit AVVideoAverageBitRateKey: it's a soft target VideoToolbox's rate
-                // control can undershoot considerably on mostly-static screen content (measured
-                // ~518 kbps actual against a 1.5 Mbps target, then ~561 kbps against 3 Mbps —
-                // raising the number barely moved the real result), which is what made two earlier
-                // attempts at an explicit bitrate look visibly blurry. Left unset, VideoToolbox
-                // falls back to its own complexity-adaptive default — the same behavior that, before
-                // any of these encoding changes, was explicitly praised as good quality (just too
-                // large a file at uncapped native resolution/frame rate). The resolution cap
-                // (maxVideoDimension) and frame rate cap (videoFrameRate) above are what now keep
-                // file size in check instead, by simply feeding the adaptive encoder far fewer
-                // pixels and frames to begin with — a guaranteed size reduction, unlike fighting the
-                // rate controller's soft bitrate target.
-                AVVideoCompressionPropertiesKey: [
-                    AVVideoExpectedSourceFrameRateKey: Int(Self.videoFrameRate),
-                    AVVideoProfileLevelKey: AVVideoProfileLevelH264HighAutoLevel,
-                ],
             ]
+            if !compressionProperties.isEmpty {
+                videoSettings[AVVideoCompressionPropertiesKey as String] = compressionProperties
+            }
             let input = AVAssetWriterInput(mediaType: .video, outputSettings: videoSettings)
             input.expectsMediaDataInRealTime = true
             writer.add(input)
@@ -263,14 +260,14 @@ final class RecordingManager: NSObject, @unchecked Sendable {
         }
 
         if settings.captureSystemAudio {
-            let input = AVAssetWriterInput(mediaType: .audio, outputSettings: Self.audioSettings)
+            let input = AVAssetWriterInput(mediaType: .audio, outputSettings: Self.audioSettings(for: settings.recordingQuality))
             input.expectsMediaDataInRealTime = true
             writer.add(input)
             systemAudioInput = input
         }
 
         if settings.captureMicrophone {
-            let input = AVAssetWriterInput(mediaType: .audio, outputSettings: Self.audioSettings)
+            let input = AVAssetWriterInput(mediaType: .audio, outputSettings: Self.audioSettings(for: settings.recordingQuality))
             input.expectsMediaDataInRealTime = true
             writer.add(input)
             microphoneInput = input
@@ -352,7 +349,8 @@ final class RecordingManager: NSObject, @unchecked Sendable {
         let scale = CGFloat(filter.pointPixelScale)
         let newSize = Self.downscaledIfNeeded(
             width: Self.evenPixelDimension(filter.contentRect.width * scale),
-            height: Self.evenPixelDimension(filter.contentRect.height * scale)
+            height: Self.evenPixelDimension(filter.contentRect.height * scale),
+            maxDimension: settings.recordingQuality.maxVideoDimension
         )
         queue.async { [self] in
             considerResizeCandidate(newSize)

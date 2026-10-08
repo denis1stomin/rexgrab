@@ -13,6 +13,7 @@ final class AppState: ObservableObject {
     @Published var recordVideo = true
     @Published var recordSystemAudio = true
     @Published var recordMicrophone = false
+    @Published var recordingQuality: RecordingQuality = .optimal
 
     @Published private(set) var stage: AppStage = .configuring
     @Published private(set) var isPaused = false
@@ -33,7 +34,8 @@ final class AppState: ObservableObject {
         RecordingSettings(
             videoSource: recordVideo ? selectedSource : nil,
             captureSystemAudio: recordSystemAudio,
-            captureMicrophone: recordMicrophone
+            captureMicrophone: recordMicrophone,
+            recordingQuality: recordingQuality
         )
     }
 

@@ -45,6 +45,7 @@ struct RecordingSettings {
     var videoSource: VideoSource?
     var captureSystemAudio: Bool
     var captureMicrophone: Bool
+    var recordingQuality: RecordingQuality = .optimal
 
     var capturesVideo: Bool { videoSource != nil }
     var needsScreenCaptureKit: Bool { capturesVideo || captureSystemAudio || captureMicrophone }

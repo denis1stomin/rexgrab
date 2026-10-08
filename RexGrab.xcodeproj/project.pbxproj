@@ -21,6 +21,8 @@
 		A07F295D71CCE79C749D9D72 /* CaptureModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5712EAA0261E43955CFACF7 /* CaptureModels.swift */; };
 		AC96822C2B69C0CC54419E3C /* DinoTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C6A0490EE44797AFC48F90C /* DinoTheme.swift */; };
 		B499ACF43B7D6BC66761B8F4 /* PermissionsChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3736F26861A9A38041690CBD /* PermissionsChecker.swift */; };
+		67EAFB8D21B349D89F02AD13 /* RecordingQuality.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2E59CEC3A254DD382BC21B7 /* RecordingQuality.swift */; };
+		F27B9DF66364497AA0D2DE40 /* RecordingQualityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42C976B7133446C9A58F3381 /* RecordingQualityTests.swift */; };
 		BA0436975C0C59E6B1918A5E /* StartButtonLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3EC40A768DA4BFFAE415238 /* StartButtonLabel.swift */; };
 		BC9D92B580F88AD4E2F15387 /* MainWindowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4B777A22E0BB9BB92966368 /* MainWindowView.swift */; };
 		E1BDFF0481BCB7EA81FC09B7 /* SourceSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6E08DCB30AB3E42E02EA45E /* SourceSelectionView.swift */; };
@@ -63,6 +65,8 @@
 		B5E4F1EEDFCF399A60D8D944 /* RecordingManagerDesktopTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RecordingManagerDesktopTests.swift; sourceTree = "<group>"; };
 		C3B12E095C56220940C98B42 /* ProcessingWindowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProcessingWindowView.swift; sourceTree = "<group>"; };
 		CA195EF44FDA0386330AC6AE /* SegmentSchedulerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SegmentSchedulerTests.swift; sourceTree = "<group>"; };
+		B2E59CEC3A254DD382BC21B7 /* RecordingQuality.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingQuality.swift; sourceTree = "<group>"; };
+		42C976B7133446C9A58F3381 /* RecordingQualityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingQualityTests.swift; sourceTree = "<group>"; };
 		E25DA8582CE45157E0542914 /* RecordingManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingManager.swift; sourceTree = "<group>"; };
 		E5712EAA0261E43955CFACF7 /* CaptureModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureModels.swift; sourceTree = "<group>"; };
 		E6E08DCB30AB3E42E02EA45E /* SourceSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceSelectionView.swift; sourceTree = "<group>"; };
@@ -149,6 +153,7 @@
 				E5712EAA0261E43955CFACF7 /* CaptureModels.swift */,
 				3736F26861A9A38041690CBD /* PermissionsChecker.swift */,
 				E25DA8582CE45157E0542914 /* RecordingManager.swift */,
+				B2E59CEC3A254DD382BC21B7 /* RecordingQuality.swift */,
 			);
 			path = Capture;
 			sourceTree = "<group>";
@@ -194,6 +199,7 @@
 			isa = PBXGroup;
 			children = (
 				E82135AE757954C14A1468DE /* FileNamingTests.swift */,
+				42C976B7133446C9A58F3381 /* RecordingQualityTests.swift */,
 				CA195EF44FDA0386330AC6AE /* SegmentSchedulerTests.swift */,
 				AD96F23E09A7DA81489D1ABB /* StartButtonLabelTests.swift */,
 			);
@@ -333,6 +339,7 @@
 				5BB4CE666D9A977EF915FE35 /* ProcessingWindowView.swift in Sources */,
 				7EB769FB4FB4E9ABA57BDC8B /* RexGrabApp.swift in Sources */,
 				0538F1376C22D060F1F0C552 /* RecordingManager.swift in Sources */,
+				67EAFB8D21B349D89F02AD13 /* RecordingQuality.swift in Sources */,
 				4599A411FD3089149CFF1376 /* RootView.swift in Sources */,
 				FBDD6E8A30593EF5F15F6400 /* SegmentScheduler.swift in Sources */,
 				E1BDFF0481BCB7EA81FC09B7 /* SourceSelectionView.swift in Sources */,
@@ -345,6 +352,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				9B6C2ED24B9D9D3F073793C5 /* FileNamingTests.swift in Sources */,
+				F27B9DF66364497AA0D2DE40 /* RecordingQualityTests.swift in Sources */,
 				7D824046FFA0F86969ED07A3 /* SegmentSchedulerTests.swift in Sources */,
 				48D97AD684519B0D1599C36A /* StartButtonLabelTests.swift in Sources */,
 			);
