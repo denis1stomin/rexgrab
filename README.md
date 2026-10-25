@@ -88,7 +88,7 @@ make clean   # remove build artifacts
 
 ## Project status
 
-RexGrab is under active development... okay, not really — it's a solo weekend project, and once it reliably does what I need, active development mostly stops. The core recording flow works end-to-end; distribution (signed builds via GitHub Releases) and broader real-world testing are still in progress. See [`RELEASE_NOTES.md`](RELEASE_NOTES.md) for what's shipped and known limitations, and [`CLAUDE.md`](CLAUDE.md) for the full architecture and decision log.
+RexGrab is under active development... okay, not really — it's a solo weekend project, and once it reliably does what I need, active development mostly stops. The core recording flow works end-to-end and has been confirmed on a real Zoom call ([v0.9.2](https://github.com/denis1stomin/rexgrab/releases/tag/v0.9.2), the latest release, built from this README); broader real-world testing (other meeting apps, long recordings) is still in progress. See [`RELEASE_NOTES.md`](RELEASE_NOTES.md) for what's shipped and known limitations, and [`CLAUDE.md`](CLAUDE.md) for the full architecture and decision log.
 
 Bug reports and feature requests are still very welcome, though — I just can't promise a release schedule.
 
