@@ -49,7 +49,13 @@ Most screen recorders either bury the feature inside a bloated all-in-one app, r
 
 ## Download
 
-Prebuilt universal binaries (Apple Silicon + Intel) are published on the [Releases](https://github.com/denis1stomin/rexgrab/releases) page. RexGrab isn't signed with an Apple Developer ID yet (see [`CLAUDE.md`](CLAUDE.md) for why), so Gatekeeper will block the unzipped app on first launch — right-click `RexGrab.app` → **Open** → **Open** to run it anyway; you only need to do this once.
+**Homebrew:**
+
+```sh
+brew install --cask denis1stomin/rexgrab/rexgrab
+```
+
+Or prebuilt universal binaries (Apple Silicon + Intel) are published on the [Releases](https://github.com/denis1stomin/rexgrab/releases) page. Either way, RexGrab isn't signed with an Apple Developer ID yet (see [`CLAUDE.md`](CLAUDE.md) for why) — Homebrew doesn't strip Gatekeeper's quarantine flag, so you'll still hit the same warning either way. Right-click `RexGrab.app` → **Open** → **Open** to run it anyway; you only need to do this once.
 
 Each release zip carries a [build provenance attestation](https://docs.github.com/en/actions/security-guides/using-artifact-attestations-to-establish-provenance-for-builds), proving it was built by this repo's public `release.yml` workflow from the tagged source — not a substitute for Apple notarization's malware scan, but it lets you confirm the download wasn't tampered with in transit. Verify it with the [GitHub CLI](https://cli.github.com/) (adjust the filename to match whichever release you downloaded):
 

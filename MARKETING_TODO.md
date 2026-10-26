@@ -40,10 +40,17 @@ Don't wait on organic Google crawling — post where the target audience already
 
 - [ ] Revisit Apple Developer ID signing/notarization — cost/tradeoff already tracked in
       `CLAUDE.md`'s decision log ("Code signing / notarization").
-- [ ] Add a Homebrew tap (`brew install --cask rexgrab`) as an easier install path than
-      download-and-unzip, which is what most macOS devs expect. A personal tap (own
-      `homebrew-rexgrab` repo + a ~15-line Cask file) is easy to set up and would also fix the
-      Gatekeeper right-click friction for free (Homebrew strips the quarantine flag on cask
-      installs since it verifies the checksum itself) — the official `homebrew-cask` repo is a
-      separate, much harder bar (notability/usage requirements, PR review) not worth attempting
-      yet. **Decision: hold off until after the next release**, not before.
+- [x] Add a Homebrew tap (`brew install --cask rexgrab`) as an easier install path than
+      download-and-unzip, which is what most macOS devs expect. Set up as a personal tap, repo
+      `denis1stomin/homebrew-rexgrab`, with `Casks/rexgrab.rb` pointing at the `v0.9.2` GitHub
+      Release zip. Verified locally end-to-end (`brew tap` + `brew install --cask` from the real
+      repo, `brew style` clean, app actually installs and runs) before publishing — see
+      `homebrew-rexgrab` repo's own README for how to bump it on future RexGrab releases.
+      **Correction to the original plan below:** Homebrew does **not** strip the Gatekeeper
+      quarantine flag on cask installs — tested directly (`xattr -l` on the installed app shows
+      `com.apple.quarantine` still set, and `spctl -a -vv` independently reports the unsigned/
+      ad-hoc-signed app as rejected). So the tap is a real convenience win over manual
+      download-and-unzip, but it does **not** remove the right-click → Open friction; that's
+      still tied to the "no Apple Developer ID" decision in `CLAUDE.md`. The official
+      `homebrew-cask` repo remains a separate, much harder bar (notability/usage requirements, PR
+      review) not attempted.

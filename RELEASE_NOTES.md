@@ -25,6 +25,7 @@ RexGrab is a native macOS app for recording video meetings (screen, system audio
 - App Sandbox enabled, scoped to Downloads read/write and microphone access.
 - Universal binary (Apple Silicon + Intel), targeting the latest macOS.
 - Distributed via GitHub Releases with a build provenance attestation — verify a downloaded zip was really built by this repo's public workflow with `gh attestation verify`.
+- Also installable via a personal Homebrew tap: `brew install --cask denis1stomin/rexgrab/rexgrab`. Note this doesn't remove the Gatekeeper warning above — Homebrew doesn't strip the quarantine flag on cask installs, contrary to an earlier assumption (see `CLAUDE.md`'s decision log).
 
 ### Known limitations
 - Not yet distributed with a signed/notarized build — running it will trigger a Gatekeeper warning until an Apple Developer ID is added later.
