@@ -6,7 +6,7 @@ import XCTest
 /// Exercises RecordingManager against the real ScreenCaptureKit/AVFoundation stack — actually
 /// capturing a few seconds of real screen/system-audio/microphone content and asserting on the
 /// resulting file, across every combination of video/system-audio/microphone the app's own UI
-/// can produce (per CLAUDE.md: "all combinations ... are supported"). The one combination left
+/// can produce (per docs/architecture.md: "Any combination ... works"). The one combination left
 /// out is all three off, which isn't reachable through the app's UI (there's nothing to record).
 ///
 /// Every video-capturing combination runs twice: once per connected display (so multi-monitor

@@ -100,7 +100,7 @@ Bug reports and feature requests are still very welcome, though — I just can't
 
 ## Contributing
 
-Issues and pull requests are welcome. The project's architectural decisions and open questions are tracked in [`CLAUDE.md`](CLAUDE.md) — worth a skim before proposing a significant change.
+Issues and pull requests are welcome. How RexGrab works and why is in [`docs/architecture.md`](docs/architecture.md) — worth a skim before proposing a significant change.
 
 ## License
 
